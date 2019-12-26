@@ -140,23 +140,111 @@ class Question extends ActiveRecordModel
      *
      * @return array Most active user.
      */
-    public function voteQuestion($questionId, $userId, $vote): array
+    public function voteQuestion($questionId, $vote, $userId, $di)
     {
-        // select userId,
-        // count(userId)  as question,
-        // User.username from Question
-        // Join User on Question.userId = User.id
-        // Group By userId
-        // Order By count DESC;
 
-        return $this->findAllJoinOrderByGroupBy(
-            "questions DESC", // order by
-            "Question.userId", // group by
-            "User", // join table
-            "Question.userId = User.id", // join on
-            "3", // limit
-            "userId, count(userId) as questions, User.username, User.email" // select
-        );
+
+        $userVoteOnQ = new UserVoteOnQuestion();
+        $userVoteOnQ->setDb($di->get("dbqb"));
+
+        $voted = $userVoteOnQ->checkIfVoted($questionId, $userId);
+        $question = $this->findById($questionId);
+        $this->id = $question->id;
+        $this->title = $question->title;
+        $this->question = $question->question;
+        $this->userId = $question->userId;
+        $this->created = $question->created;
+        $this->points = $question->points;
+
+        if ($voted) {
+            var_dump("voted true");
+            $result = $userVoteOnQ->findWhere("questionId = ? AND userId = ?", [$questionId, $userId]);
+            // print_r($result);
+            $previousVote = $result->vote;
+            if ($previousVote == "up" AND $vote == "up") {
+                var_dump("previous vote up and vote up", $this->points);
+                $this->points = $this->points - 1;
+                $userVoteOnQ->deleteWhere("questionId = ? AND userId = ?", [$questionId, $userId]);
+                return $this->updateWhere("id = ?", $questionId);
+            } else if ($previousVote == "down" AND $vote == "down") {
+                var_dump("previous vote down and vote down", $this->points);
+                $this->points = $this->points + 1;
+                $userVoteOnQ->deleteWhere("questionId = ? AND userId = ?", [$questionId, $userId]);
+                return $this->updateWhere("id = ?", $questionId);
+            } else if ($previousVote == "up") {
+                $this->points = $this->points - 1;
+            } else if ($previousVote == "down") {
+                $this->points = $this->points + 1;
+            }
+            $this->updateWhere("id = ?", $questionId);
+            $userVoteOnQ->deleteWhere("questionId = ? AND userId = ?", [$questionId, $userId]);
+            // $userVoteOnQ->id = $result->id;
+            // $userVoteOnQ->questionId = $questionId;
+            // $userVoteOnQ->userId = $userId;
+            // $userVoteOnQ->updateWhere("id = ?", $result->id);
+
+            if ($vote == "up") {
+                var_dump("voted and up");
+                $this->points = $this->points + 1;
+            } else {
+                var_dump("voted and down");
+                $this->points = $this->points - 1;
+            }
+
+            $userVoteOnQ = new UserVoteOnQuestion();
+            $userVoteOnQ->setDb($di->get("dbqb"));
+            $userVoteOnQ->questionId = $questionId;
+            $userVoteOnQ->userId = $userId;
+            $userVoteOnQ->vote = $vote;
+            $userVoteOnQ->save();
+        } else {
+            var_dump("voted false");
+            if ($vote == "up") {
+                var_dump("not voted and up");
+                $this->points = $this->points + 1;
+            } else {
+                var_dump("not voted and down");
+                $this->points = $this->points - 1;
+            }
+            $userVoteOnQ = new UserVoteOnQuestion();
+            $userVoteOnQ->setDb($di->get("dbqb"));
+            $userVoteOnQ->questionId = $questionId;
+            $userVoteOnQ->userId = $userId;
+            $userVoteOnQ->vote = $vote;
+            $userVoteOnQ->save();
+        }
+        return $this->updateWhere("id = ?", $questionId);
     }
+    
+
+    
+    /**
+     * Reset vote
+     *
+     *
+     * @return array Most active user.
+     */
+    public function resetVote($questionId, $vote, $previousVote)
+    {
+
+        $question = $this->findById($questionId);
+        
+        $this->id = $question->id;
+        $this->title = $question->title;
+        $this->question = $question->question;
+        $this->userId = $question->userId;
+        $this->created = $question->created;
+
+        if ($previousVote == "up") {
+            $this->points = $question->points - 1;
+        } else {
+            $this->points = $question->points + 1;
+        }
+        $this->updateWhere("id = ?", $questionId);
+
+        return $this->voteQuestion($questionId, $vote);
+
+    }
+    
 
 }

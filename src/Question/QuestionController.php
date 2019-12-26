@@ -48,6 +48,8 @@ class QuestionController implements ContainerInjectableInterface
         $this->answer->setDb($this->di->get("dbqb"));
         $this->comment = new Comment();
         $this->comment->setDb($this->di->get("dbqb"));
+        // $this->userVoteOnQ = new UserVoteOnQuestion();
+        // $this->userVoteOnQ->setDb($this->di->get("dbqb"));
     }
 
     /**
@@ -274,7 +276,7 @@ class QuestionController implements ContainerInjectableInterface
      *
      * @return object as a response object
      */
-    public function voteAction(): object
+    public function voteAction()
     {
         $page = $this->di->get("page");
         $request = $this->di->get("request");
@@ -282,16 +284,9 @@ class QuestionController implements ContainerInjectableInterface
         $questionId = $request->getGet("questionId");
         $userId = $request->getGet("userId");
 
-        $page->add("question/crud/comment", [
-            "question" => $question,
-            // "answers" => $answers,
-            // "tags" => $tags,
-            "form" => $form->getHTML(),
-            "questionParsed" => $questionParsed,
-            "comments" => $comments,
-        ]);
-        return $page->render([
-            "title" => "Comment question",
-        ]);
+        $question = new Question();
+        $question->setDb($this->di->get("dbqb"));
+        $question->voteQuestion($questionId, $vote, $userId, $this->di);
+        $this->di->get("response")->redirect("question/post/" . $questionId)->send();
     }
 }
