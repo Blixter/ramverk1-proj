@@ -3,7 +3,7 @@
 # Create a database file and change the mode
 echo "Creating database file: 'data/db.sqlite'..."
 touch data/db.sqlite
-chmod 666 data/db.sqlite
+chmod 777 data/db.sqlite
 
 echo "Creating tables for database..."
 # Create the database tables
