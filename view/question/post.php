@@ -3,14 +3,30 @@
 namespace Anax\View;
 
 use Blixter\Gravatar\Gravatar;
+use Blixter\Question\UserVoteOnQuestion;
 
 $gravatar = new Gravatar();
+$userVoteOnQ = new UserVoteOnQuestion();
+$userVoteOnQ->setDb($di->get("dbqb"));
 
 // $session = $di->session->delete("login");
 $userId = $di->session->get("login") ?? null;
 $disabled = $userId ? null : "disabled";
 $hidden = $userId ? null : "visibility: hidden;";
 $notLoggedInMessage = $userId ? null : "Log in if you want to vote, answer or comment the post!";
+$voteTextColorUp = null;
+$voteTextColorDown = null;
+
+
+if ($userId) {
+    $questionVote = $userVoteOnQ->getVote($question->id, $userId);
+    if ($questionVote == "up") {
+        $voteTextColorUp = "text-primary";
+    } else if ($questionVote == "down") {
+        $voteTextColorDown = "text-primary";
+    }
+}
+
 ?>
 
 
@@ -24,11 +40,11 @@ $notLoggedInMessage = $userId ? null : "Log in if you want to vote, answer or co
     <div class="rows">
         <div class="col-sm-1 p-2 text-center">
             <div class="d-flex flex-column mb-3 text-black-50">
-                <div class="p-2">
+                <div class="p-2 <?=$voteTextColorUp?>">
                     <form action=<?=url("question/vote")?> method="get">
                         <input hidden name="userId" value="<?=$userId?>">
                         <input hidden name="questionId" value="<?=$question->id?>">
-                        <button type="submit" name="vote" value="up" class="fabutton" <?=$disabled?>>
+                        <button type="submit" name="vote" value="up" class="fabutton " <?=$disabled?>>
                             <i class="fas fa-lg fa-arrow-up"></i>
                         </button>
                     </form>
@@ -36,11 +52,11 @@ $notLoggedInMessage = $userId ? null : "Log in if you want to vote, answer or co
                 <div class="p-2 p-0">
                     <p class="h4"><b><?=$question->points?></b>
                 </div>
-                <div class="p-2">
+                <div class="p-2 <?=$voteTextColorDown?>">
                     <form action=<?=url("question/vote")?> method="get">
                         <input hidden name="userId" value="<?=$userId?>">
                         <input hidden name="questionId" value="<?=$question->id?>">
-                        <button type="submit" name="vote" value="down" class="fabutton" <?=$disabled?>>
+                        <button type="submit" name="vote" value="down" class="fabutton " <?=$disabled?>>
                             <i class="fas fa-lg fa-arrow-down"></i>
                         </button>
                     </form>
@@ -69,12 +85,6 @@ $notLoggedInMessage = $userId ? null : "Log in if you want to vote, answer or co
             <a class="btn btn-primary" href="<?=url("question/comment/" . $question->id)?>">Comment <i class="fas fa-comment fa-lg"></i></a>
         </div>
 
-
-<!-- <div class="">
-    <p><?=$answers?></p>
-</div> -->
-
-<!-- <?php var_dump($answers);?> -->
 
 <?php foreach ($comments as $comment): ?>
         <div class="" style="padding: 0.5rem; margin: 0.5rem;">
