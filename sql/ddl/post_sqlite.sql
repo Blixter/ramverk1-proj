@@ -45,6 +45,17 @@ CREATE TABLE TagToQuestion (
 );
 
 --
+-- Table UserVoteOnQuestion
+--
+DROP TABLE IF EXISTS UserVoteOnQuestion;
+CREATE TABLE UserVoteOnQuestion (
+    "id" INTEGER PRIMARY KEY NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "questionId" INTEGER NOT NULL,
+    "vote" TEXT 
+);
+
+--
 -- Table Comment
 --
 DROP TABLE IF EXISTS Comment;
