@@ -11,6 +11,7 @@ namespace Anax\View;
 
 
 
-?><span class="site-logo" >
-    <img src="<?= asset($siteLogo) ?>" alt="<?= $siteLogoAlt ?>">
+?>
+<span class="site-logo" >
+    <!-- <img src="<?= asset($siteLogo) ?>" alt="<?= $siteLogoAlt ?>"> -->
 </span>
