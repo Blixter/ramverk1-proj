@@ -32,26 +32,6 @@ class Question extends ActiveRecordModel
     public $created;
     public $points;
 
-    // /**
-    //  * Returns the latest questions sorted by date created.
-    //  *
-    //  * @param $di A service container.
-    //  * @param integer $amount Number of questions.
-    //  *
-    //  * @return array $questions With latest questions.
-    //  */
-    // public function getSortedQuestions($di, $amount): array
-    // {
-    //     $db = $di->get("db");
-    //     $db->connect();
-
-    //     $amountQuestions = $amount ? "LIMIT $amount" : null;
-
-    //     $sql = "SELECT * FROM Question ORDER BY created DESC $amountQuestions";
-    //     $questions = $db->executeFetchAll($sql);
-    //     return $questions;
-    // }
-
     /**
      * Returns the latest questions sorted by date created.
      *
@@ -72,14 +52,6 @@ class Question extends ActiveRecordModel
         );
 
         return $questions;
-        // $db = $di->get("db");
-        // $db->connect();
-
-        // $amountQuestions = $amount ? "LIMIT $amount" : null;
-
-        // $sql = "SELECT * FROM Question ORDER BY created DESC $amountQuestions";
-        // $questions = $db->executeFetchAll($sql);
-        // return $questions;
     }
 
     /**
@@ -101,11 +73,6 @@ class Question extends ActiveRecordModel
             "Question.*, User.username, User.email" // Select
         );
 
-        // $db = $di->get("db");
-        // $db->connect();
-
-        // $sql = "SELECT * FROM Question WHERE userId = $uId ORDER BY created";
-        // $questions = $db->executeFetchAll($sql);
         return $questions;
     }
 
@@ -117,13 +84,6 @@ class Question extends ActiveRecordModel
      */
     public function getMostActiveUser(): array
     {
-        // select userId,
-        // count(userId)  as question,
-        // User.username from Question
-        // Join User on Question.userId = User.id
-        // Group By userId
-        // Order By count DESC;
-
         return $this->findAllJoinOrderByGroupBy(
             "questions DESC", // order by
             "Question.userId", // group by
@@ -143,7 +103,6 @@ class Question extends ActiveRecordModel
     public function voteQuestion($questionId, $vote, $userId, $di)
     {
 
-
         $userVoteOnQ = new UserVoteOnQuestion();
         $userVoteOnQ->setDb($di->get("dbqb"));
 
@@ -157,17 +116,13 @@ class Question extends ActiveRecordModel
         $this->points = $question->points;
 
         if ($voted) {
-            var_dump("voted true");
             $result = $userVoteOnQ->findWhere("questionId = ? AND userId = ?", [$questionId, $userId]);
-            // print_r($result);
             $previousVote = $result->vote;
-            if ($previousVote == "up" AND $vote == "up") {
-                var_dump("previous vote up and vote up", $this->points);
+            if ($previousVote == "up" and $vote == "up") {
                 $this->points = $this->points - 1;
                 $userVoteOnQ->deleteWhere("questionId = ? AND userId = ?", [$questionId, $userId]);
                 return $this->updateWhere("id = ?", $questionId);
-            } else if ($previousVote == "down" AND $vote == "down") {
-                var_dump("previous vote down and vote down", $this->points);
+            } else if ($previousVote == "down" and $vote == "down") {
                 $this->points = $this->points + 1;
                 $userVoteOnQ->deleteWhere("questionId = ? AND userId = ?", [$questionId, $userId]);
                 return $this->updateWhere("id = ?", $questionId);
@@ -178,16 +133,10 @@ class Question extends ActiveRecordModel
             }
             $this->updateWhere("id = ?", $questionId);
             $userVoteOnQ->deleteWhere("questionId = ? AND userId = ?", [$questionId, $userId]);
-            // $userVoteOnQ->id = $result->id;
-            // $userVoteOnQ->questionId = $questionId;
-            // $userVoteOnQ->userId = $userId;
-            // $userVoteOnQ->updateWhere("id = ?", $result->id);
 
             if ($vote == "up") {
-                var_dump("voted and up");
                 $this->points = $this->points + 1;
             } else {
-                var_dump("voted and down");
                 $this->points = $this->points - 1;
             }
 
@@ -198,12 +147,9 @@ class Question extends ActiveRecordModel
             $userVoteOnQ->vote = $vote;
             $userVoteOnQ->save();
         } else {
-            var_dump("voted false");
             if ($vote == "up") {
-                var_dump("not voted and up");
                 $this->points = $this->points + 1;
             } else {
-                var_dump("not voted and down");
                 $this->points = $this->points - 1;
             }
             $userVoteOnQ = new UserVoteOnQuestion();
@@ -215,9 +161,7 @@ class Question extends ActiveRecordModel
         }
         return $this->updateWhere("id = ?", $questionId);
     }
-    
 
-    
     /**
      * Reset vote
      *
@@ -228,7 +172,7 @@ class Question extends ActiveRecordModel
     {
 
         $question = $this->findById($questionId);
-        
+
         $this->id = $question->id;
         $this->title = $question->title;
         $this->question = $question->question;
@@ -245,6 +189,5 @@ class Question extends ActiveRecordModel
         return $this->voteQuestion($questionId, $vote);
 
     }
-    
 
 }
