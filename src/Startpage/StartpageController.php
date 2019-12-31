@@ -98,11 +98,29 @@ class StartpageController implements ContainerInjectableInterface
         ]);
 
         $page->add("startpage/flash", [
-            "src" => "img/code.jpg",
+            "src" => "image/code.jpg?width=1000&height=250&crop-to-fit&q=100",
         ], "flash");
 
         return $page->render([
             "title" => "Startpage",
         ]);
     }
+    /**
+     * Show all items.
+     *
+     * @return object as a response object
+     */
+    public function aboutActionGet(): object
+    {
+        $page = $this->di->get("page");
+
+        $page->add("startpage/about", [
+            "lol" => "lol",
+        ]);
+
+        return $page->render([
+            "title" => "About",
+        ]);
+    }
+
 }
