@@ -48,8 +48,6 @@ class QuestionController implements ContainerInjectableInterface
         $this->answer->setDb($this->di->get("dbqb"));
         $this->comment = new Comment();
         $this->comment->setDb($this->di->get("dbqb"));
-        // $this->userVoteOnQ = new UserVoteOnQuestion();
-        // $this->userVoteOnQ->setDb($this->di->get("dbqb"));
     }
 
     /**
@@ -62,13 +60,39 @@ class QuestionController implements ContainerInjectableInterface
         $page = $this->di->get("page");
         $question = new Question();
         $question->setDb($this->di->get("dbqb"));
+        $allQuestions = $question->getSortedQuestions(1000);
 
-        $page->add("question/crud/view-all", [
-            "items" => $question->findAll(),
+        $qWithTags = [];
+
+        for ($i = 0; $i < count($allQuestions); $i++) {
+
+            $currentTags = $this->tag2question->findAllWhereJoin(
+                "TagToQuestion.questionId = ?", // Where
+                $allQuestions[$i]->id, // Value
+                "Tag", // Table to join
+                "Tag.id = TagToQuestion.tagId", // Join on
+                "TagToQuestion.*, Tag.tagName" // Select
+            );
+
+            $answerCount = $this->answer->getAnswersCountForQuestion($allQuestions[$i]->id);
+
+            $questionParsed = MarkdownExtra::defaultTransform($allQuestions[$i]->question);
+
+            array_push($qWithTags,
+                [
+                    "question" => $allQuestions[$i],
+                    "tags" => $currentTags,
+                    "questionParsed" => $questionParsed,
+                    "answerCount" => $answerCount[0]->count,
+                ]);
+        };
+
+        $page->add("question/index", [
+            "questions" => $qWithTags,
         ]);
 
         return $page->render([
-            "title" => "A collection of items",
+            "title" => "Questions",
         ]);
     }
 
@@ -213,12 +237,14 @@ class QuestionController implements ContainerInjectableInterface
         }
 
         $answers = $this->answer->getAllAnswers($this->di, $id);
+        $answerCount = $this->answer->getAnswersCountForQuestion($id);
 
         $page->add("question/post", [
             "question" => $question,
             "questionParsed" => $questionParsed,
             "tags" => $currentTags,
             "answers" => $answers,
+            "answerCount" => $answerCount[0]->count,
             "comments" => $comments,
         ]);
 

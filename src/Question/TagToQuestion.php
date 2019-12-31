@@ -62,24 +62,46 @@ class TagToQuestion extends ActiveRecordModel
         return $res;
     }
 
-    /**
-     * Return rows of all tags for current question
-     *
-     * @param object $di service container.
-     *
-     * @param integer $tId TagId.
-     *
-     * @return array $tags for currentQuestion.
-     */
-    public function getQuestionsForTag($di, $tId): array
-    {
-        $db = $di->get("db");
-        $db->connect();
-        $sql = "SELECT * FROM TagToQuestion AS t2q
-        LEFT JOIN Question AS q ON t2q.questionId = q.id
-        WHERE tagId = $tId";
+    // /**
+    //  * Return rows of all tags for current question
+    //  *
+    //  * @param object $di service container.
+    //  *
+    //  * @param integer $tId TagId.
+    //  *
+    //  * @return array $tags for currentQuestion.
+    //  */
+    // public function getQuestionsForTag($di, $tId): array
+    // {
+    //     $db = $di->get("db");
+    //     $db->connect();
+    //     $sql = "SELECT * FROM TagToQuestion AS t2q
+    //     LEFT JOIN Question AS q ON t2q.questionId = q.id
+    //     WHERE tagId = $tId";
 
-        $res = $db->executeFetchAll($sql);
-        return $res;
+    //     $res = $db->executeFetchAll($sql);
+    //     return $res;
+    // }
+
+    /**
+     * Returns all questsions with tag sorted by date.
+     *
+     * @param integer $tId TagId of Tag.
+     *
+     * @return array $questions with the Tag.
+     */
+    public function getQuestionsForTag($tId): array
+    {
+        $this->checkDb();
+        $params = [$tId];
+        return $this->db->connect()
+            ->select("TagToQuestion.*, Question.*, User.username, User.email")
+            ->from($this->tableName)
+            ->where("TagToQuestion.tagId = ?")
+            ->join("Question", "TagToQuestion.questionId = Question.id")
+            ->join("User", "Question.userId = User.id")
+            ->orderBy("created DESC")
+            ->execute($params)
+            ->fetchAllClass(get_class($this));
     }
 }
