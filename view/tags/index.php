@@ -5,8 +5,13 @@ namespace Anax\View;
 use Blixter\Gravatar\Gravatar;
 
 $gravatar = new Gravatar;
+$questionURL = url("question/create");
 
-?><h1>View latest questions</h1>
+?>
+
+<a href="<?=$questionURL?>"><p>Ask a question</p></a>
+
+<h1>All questions with tag</h1>
 
 <?php foreach ($questions as $question): ?>
     <div class="container border-bottom">
@@ -35,35 +40,8 @@ $gravatar = new Gravatar;
                 <div class="col-sm-2">
                     <small><?=date('d F Y, h:i', $question["question"]->created)?></small>
                     <div><img src="<?=$gravatar->getGravatar($question["question"]->email, 50)?>"></div>
-                    <p style="margin: 0;"><a href="<?=url("user/view/" . $question["question"]->userId)?>"><?=$question["question"]->username?></a></p>
+                    <p style="margin: 0;"><a href="<?=url("question/user/" . $question["question"]->userId)?>"><?=$question["question"]->username?></a></p>
             </div>
         </div>
     </div>
     <?php endforeach;?>
-
-<div class="container">
-    <div class="rows">
-        <div class="col">
-            <h1>Most popular tags</h1>
-            <?php foreach ($popularTags as $tag): ?>
-
-                <div class="container a-inherit text-light mt-4">
-                    <a role="button" class="col- p-2 btn-secondary btn-sm a-inherit" href="<?=url("tags/get/" . $tag->tagId)?>"><?=$tag->tagName?></a> <span class="text-dark"><b><?=$tag->count;?> Questions</b></span>
-                </div>
-
-            <?php endforeach;?>
-        </div>
-
-        <div class="col">
-            <h1>Most active users</h1>
-
-            <?php foreach ($mostActiveUser as $user): ?>
-
-                <div class="container mt-4">
-                    <div><img src="<?=$gravatar->getGravatar($user->email, 60)?>"></div>
-                    <div class="col-"><a href="<?=url("user/view/" . $user->id)?>"><?=$user->username?></a></div>
-                    <div><b>Activepoints: <?=$user->activepoints;?></b></div>
-                </div>
-
-            <?php endforeach;?>
-        </div>

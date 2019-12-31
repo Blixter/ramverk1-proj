@@ -1,16 +1,16 @@
 <?php
-// var_dump($question->id);
-// var_dump($question->title);
-// var_dump($question->question);
-// var_dump($question->username);
-// var_dump($question->userId);
-// var_dump($question);
+
+namespace Anax\View;
+
 ?>
 
 <h1>Answer question</h1>
 
+
+
 <div class="">
-    <p><?=$questionParsed?></p>
+    <small><?=date('d F Y, h:i:s', $question->created)?> by <a href="<?=url("user/view/{$question->userId}")?>"><strong><?=$question->username?></strong></a></small>
+    <div class="markdown"><?=$questionParsed?></div>
 </div>
 
 <?=$form;?>

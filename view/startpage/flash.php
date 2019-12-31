@@ -6,4 +6,8 @@ namespace Anax\View;
  */
 
 ?>
-<img class="flash" src="<?=$src?>">
+<div class="container-fluid">
+        <div class="d-flex justify-content-center">
+            <img class="flash" src="<?=$src?>">
+        </div>
+</div>

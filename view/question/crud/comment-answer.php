@@ -2,28 +2,23 @@
 
 namespace Anax\View;
 
-// var_dump($question->id);
-// var_dump($question->title);
-// var_dump($question->question);
-// var_dump($question->username);
-// var_dump($question->userId);
 ?>
 
 <h1>Comment answer</h1>
-
-<div class="card">
-  <div class="card-body">
-    <h5 class=""><?=$answer->username?></h5>
-    <p class="card-text"><?=$answerParsed?></p>
-  </div>
+<div class="container border-bottom">
+    <small><?=date('d F Y, h:i:s', $answer->created)?> by <a href="<?=url("user/view/{$answer->userId}")?>"><strong><?=$answer->username?></strong></a></small>
+    <div class="markdown"><?=$answerParsed?></div>
 </div>
 
 <?php foreach ($comments as $comment): ?>
-
-<p>Posted <small><?=date('d F Y, h:i:s', $comment->created)?></small> by <?=$comment->username?></p>
-<?=$comment->commentParsed?>
-
+    <div class="">
+            <div class="border-bottom pl-5 p-0 mt-1 mb-1">
+                <small><?=date('d F Y, h:i:s', $comment->created)?> by <a href="<?=url("user/view/{$comment->userId}")?>"><strong><?=$comment->username?></strong></a></small>
+                <?=$comment->commentParsed?>
+            </div>
+        </div>
 <?php endforeach?>
+
 
 <?=$form;?>
 
