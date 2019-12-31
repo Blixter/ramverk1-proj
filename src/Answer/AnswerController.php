@@ -227,4 +227,46 @@ class AnswerController implements ContainerInjectableInterface
         ]);
     }
 
+    /**
+     * Vote on Answer
+     *
+     *
+     * @return object as a response object
+     */
+    public function voteAction()
+    {
+        $page = $this->di->get("page");
+        $request = $this->di->get("request");
+        $vote = $request->getGet("vote");
+        $questionId = $request->getGet("questionId");
+        $answerId = $request->getGet("answerId");
+        $userId = $request->getGet("userId");
+
+        $answer = new Answer();
+        $answer->setDb($this->di->get("dbqb"));
+        $answer->voteAnswer($answerId, $vote, $userId, $this->di);
+        $this->di->get("response")->redirect("question/post/" . $questionId)->send();
+    }
+
+    /**
+     * Accept an answer
+     *
+     *
+     * @return object as a response object
+     */
+    public function acceptAction()
+    {
+        $session = $this->di->get("session");
+        $userId = $this->di->session->get("login") ?? null;
+        $page = $this->di->get("page");
+        $request = $this->di->get("request");
+        $questionId = $request->getGet("questionId");
+        $answerId = $request->getGet("answerId");
+
+        $answer = new Answer();
+        $answer->setDb($this->di->get("dbqb"));
+        $answer->acceptAnswer($answerId, $userId);
+        $this->di->get("response")->redirect("question/post/" . $questionId)->send();
+    }
+
 }
