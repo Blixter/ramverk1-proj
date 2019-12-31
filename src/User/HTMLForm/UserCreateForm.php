@@ -27,25 +27,34 @@ class UserCreateForm extends FormModel
             [
                 "username" => [
                     "type" => "text",
+                    "class" => "form-control",
+                    "validation" => ["not_empty"],
                 ],
 
                 "email" => [
                     "type" => "text",
+                    "class" => "form-control",
+                    "validation" => ["not_empty"],
                 ],
 
                 "password" => [
                     "type" => "password",
+                    "class" => "form-control",
+                    "validation" => ["not_empty"],
                 ],
 
                 "password-again" => [
                     "type" => "password",
+                    "class" => "form-control",
                     "validation" => [
                         "match" => "password",
+                        "not_empty",
                     ],
                 ],
 
                 "submit" => [
                     "type" => "submit",
+                    "class" => "btn btn-primary",
                     "value" => "Create user",
                     "callback" => [$this, "callbackSubmit"],
                 ],

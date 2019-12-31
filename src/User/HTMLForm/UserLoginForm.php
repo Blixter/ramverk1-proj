@@ -27,19 +27,20 @@ class UserLoginForm extends FormModel
             ],
             [
                 "username" => [
+                    "class" => "form-control",
                     "type" => "text",
-                    //"description" => "Here you can place a description.",
-                    //"placeholder" => "Here is a placeholder",
+                    "validation" => ["not_empty"],
                 ],
 
                 "password" => [
+                    "class" => "form-control",
                     "type" => "password",
-                    //"description" => "Here you can place a description.",
-                    //"placeholder" => "Here is a placeholder",
+                    "validation" => ["not_empty"],
                 ],
 
                 "submit" => [
                     "type" => "submit",
+                    "class" => "btn btn-primary",
                     "value" => "Login",
                     "callback" => [$this, "callbackSubmit"],
                 ],
@@ -75,5 +76,26 @@ class UserLoginForm extends FormModel
         $session->set("login", $user->id);
 
         return true;
+    }
+
+    /**
+     * Callback what to do if the form was successfully submitted, this
+     * happen when the submit callback method returns true. This method
+     * can/should be implemented by the subclass for a different behaviour.
+     */
+    public function callbackSuccess()
+    {
+        $this->di->get("response")->redirect("")->send();
+    }
+
+    /**
+     * Callback what to do if the form was unsuccessfully submitted, this
+     * happen when the submit callback method returns false or if validation
+     * fails. This method can/should be implemented by the subclass for a
+     * different behaviour.
+     */
+    public function callbackFail()
+    {
+        $this->di->get("response")->redirectSelf()->send();
     }
 }

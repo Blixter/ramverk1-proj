@@ -61,32 +61,128 @@ class User extends ActiveRecordModel
      */
     public function getMostActiveUser(): array
     {
-        return $this->findAllJoinOrderByGroupBy(
-            "activepoints DESC", // order by
-            "User.id", // group by
-            "Question", // join table
-            "User.id = Question.userId", // join on
-            "3", // limit
-            "User.id,
-            User.userName,
-            User.email,
-            ((SELECT count(Question.id) FROM Question WHERE Question.userId = User.id) +
-            (SELECT count(Answer.id) FROM Answer WHERE Answer.userId = User.id) +
-            (SELECT count(Comment.id) FROM Comment WHERE Comment.userId = User.id)) as activepoints" // select
-        );
+
+        $this->checkDb();
+        return $this->db->connect()
+            ->select("User.id,
+                User.userName,
+                User.email,
+                ((SELECT count(Question.id) FROM Question WHERE Question.userId = User.id) +
+                (SELECT count(Answer.id) FROM Answer WHERE Answer.userId = User.id) +
+                (SELECT count(Comment.id) FROM Comment WHERE Comment.userId = User.id)) as activepoints")
+            ->from($this->tableName)
+            ->orderBy("activepoints DESC")
+            ->groupBy("User.id")
+            ->limit(3)
+            ->execute()
+            ->fetchAllClass(get_class($this));
     }
 
-//     SELECT
-    // User.id,
-    // User.userName,
-    // User.email,
-    // ((SELECT count(Question.id) FROM Question WHERE Question.userId = User.id) +
-    // (SELECT count(Answer.id) FROM Answer WHERE Answer.userId = User.id) +
-    // (SELECT count(Comment.id) FROM Comment WHERE Comment.userId = User.id)) as activepoints
-    // FROM User
-    // JOIN Question ON User.id = Question.userId
-    // GROUP BY User.id
-    // ORDER BY "activepoints" DESC
-    // LIMIT 3;
+    /**
+     * Returns email and username for user.
+     *
+     *
+     * @return object User information
+     */
+    public function getUserInfo($id): object
+    {
+        return $this->findWhere("id = ?", $id, "User.email, User.username");
+    }
+
+    /**
+     * Returns email and username for user.
+     *
+     *
+     * @return string User total votes
+     */
+    public function getVotesByUser($id): string
+    {
+        return $this->getQuestionVotesByUser($id)->votes
+         + $this->getAnswerVotesByUser($id)->votes;
+    }
+
+    /**
+     * Returns email and username for user.
+     *
+     *
+     * @return string User total points
+     */
+    public function getPointsByUser($id): string
+    {
+        return $this->getQuestionPointsByUser($id)->totalPoints
+         + $this->getAnswerPointsByUser($id)->totalPoints;
+    }
+
+    /**
+     * Returns email and username for user.
+     *
+     *
+     * @return string User total votes
+     */
+    public function getQuestionVotesByUser($id): object
+    {
+        $params = [$id];
+        $this->checkDb();
+        return $this->db->connect()
+            ->select("COUNT(id) AS votes")
+            ->where("userId = ?")
+            ->from("UserVoteOnQuestion")
+            ->execute($params)
+            ->fetchInto($this);
+    }
+
+    /**
+     * Returns email and username for user.
+     *
+     *
+     * @return string User total votes
+     */
+    public function getAnswerVotesByUser($id): object
+    {
+        $params = [$id];
+        $this->checkDb();
+        return $this->db->connect()
+            ->select("COUNT(id) AS votes")
+            ->where("userId = ?")
+            ->from("UserVoteOnAnswer")
+            ->execute($params)
+            ->fetchInto($this);
+    }
+
+    /**
+     * Returns email and username for user.
+     *
+     *
+     * @return string User total votes
+     */
+    public function getAnswerPointsByUser($id): object
+    {
+        $params = [$id];
+        $this->checkDb();
+        return $this->db->connect()
+            ->select("SUM(points) AS totalPoints")
+            ->where("userId = ?")
+            ->from("Answer")
+            ->execute($params)
+            ->fetchInto($this);
+    }
+
+    /**
+     * Returns email and username for user.
+     *
+     *
+     * @return string User total votes
+     */
+    public function getQuestionPointsByUser($id): object
+    {
+        $params = [$id];
+        $this->checkDb();
+        return $this->db->connect()
+            ->select("SUM(points) AS totalPoints")
+            ->where("userId = ?")
+            ->from("Question")
+            ->execute($params)
+            ->fetchInto($this);
+    }
 
 }
