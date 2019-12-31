@@ -2,52 +2,89 @@
 /**
  * Supply the basis for the navbar as an array.
  */
-return [
-    // Use for styling the menu
-    "id" => "rm-menu",
-    "wrapper" => null,
-    "class" => "rm-default rm-mobile a-inherit",
+global $di;
 
-    // Here comes the menu items
-    "items" => [
-        [
-            "text" => "Hem",
-            "url" => "",
-            "title" => "Första sidan, börja här.",
-        ],
-        [
-            "text" => "Redovisning",
-            "url" => "redovisning",
-            "title" => "Redovisningstexter från kursmomenten.",
-            "submenu" => [
-                "items" => [
-                    [
-                        "text" => "Kmom01",
-                        "url" => "redovisning/kmom01",
-                        "title" => "Redovisning för kmom01.",
-                    ],
-                    [
-                        "text" => "Kmom02",
-                        "url" => "redovisning/kmom02",
-                        "title" => "Redovisning för kmom02.",
-                    ],
-                ],
+$session = $di->get("session");
+if ($session->has("login")) {
+    return [
+        // Use for styling the menu
+        "id" => "rm-menu",
+        "wrapper" => null,
+        "class" => "rm-default rm-mobile a-inherit",
+
+        // Here comes the menu items
+        "items" => [
+            [
+                "text" => "Home",
+                "url" => "",
+                "title" => "Home page",
+            ],
+            [
+                "text" => "About",
+                "url" => "about",
+                "title" => "About the site",
+            ],
+            [
+                "text" => "Questions",
+                "url" => "question",
+                "title" => "All questions",
+            ],
+            [
+                "text" => "Tags",
+                "url" => "tags",
+                "title" => "All tags",
+            ],
+            [
+                "text" => "Profile",
+                "url" => "user/profile",
+                "title" => "User profile",
+            ],
+            [
+                "text" => "Logout",
+                "url" => "user/logout",
+                "title" => "Logout",
             ],
         ],
-        [
-            "text" => "Om",
-            "url" => "om",
-            "title" => "Om denna webbplats.",
+    ];
+} else {
+    return [
+        // Use for styling the menu
+        "id" => "rm-menu",
+        "wrapper" => null,
+        "class" => "rm-default rm-mobile a-inherit",
+
+        // Here comes the menu items
+        "items" => [
+            [
+                "text" => "Home",
+                "url" => "",
+                "title" => "Home page",
+            ],
+            [
+                "text" => "About",
+                "url" => "about",
+                "title" => "About the site",
+            ],
+            [
+                "text" => "Questions",
+                "url" => "question",
+                "title" => "All questions",
+            ],
+            [
+                "text" => "Tags",
+                "url" => "tags",
+                "title" => "All tags",
+            ],
+            [
+                "text" => "Login",
+                "url" => "user/login",
+                "title" => "Login",
+            ],
+            [
+                "text" => "Register",
+                "url" => "user/create",
+                "title" => "Register",
+            ],
         ],
-        [
-            "text" => "Styleväljare",
-            "url" => "style",
-            "title" => "Välj stylesheet.",
-        ],
-        [
-            "text" => "Verktyg",
-            "url" => "verktyg",
-            "title" => "Verktyg och möjligheter för utveckling.",
-        ],
-    ],
-];
+    ];
+}
