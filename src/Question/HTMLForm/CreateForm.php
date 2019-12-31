@@ -33,16 +33,18 @@ class CreateForm extends FormModel
         $this->form->create(
             [
                 "id" => __CLASS__,
-                "legend" => "Ask a Question",
+
             ],
             [
                 "title" => [
                     "type" => "text",
+                    "class" => "form-control",
                     "validation" => ["not_empty"],
                 ],
 
                 "question" => [
-                    "type" => "text",
+                    "type" => "textarea",
+                    "class" => "form-control",
                     "validation" => ["not_empty"],
                 ],
 
@@ -55,6 +57,7 @@ class CreateForm extends FormModel
 
                 "submit" => [
                     "type" => "submit",
+                    "class" => "btn btn-primary",
                     "value" => "Create item",
                     "callback" => [$this, "callbackSubmit"],
                 ],
@@ -127,14 +130,14 @@ class CreateForm extends FormModel
         $this->di->get("response")->redirect("question")->send();
     }
 
-    // /**
-    //  * Callback what to do if the form was unsuccessfully submitted, this
-    //  * happen when the submit callback method returns false or if validation
-    //  * fails. This method can/should be implemented by the subclass for a
-    //  * different behaviour.
-    //  */
-    // public function callbackFail()
-    // {
-    //     $this->di->get("response")->redirectSelf()->send();
-    // }
+    /**
+     * Callback what to do if the form was unsuccessfully submitted, this
+     * happen when the submit callback method returns false or if validation
+     * fails. This method can/should be implemented by the subclass for a
+     * different behaviour.
+     */
+    public function callbackFail()
+    {
+        $this->di->get("response")->redirectSelf()->send();
+    }
 }
