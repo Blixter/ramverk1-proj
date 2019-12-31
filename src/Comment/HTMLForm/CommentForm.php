@@ -38,10 +38,12 @@ class CommentForm extends FormModel
                     "validation" => ["not_empty"],
                 ],
                 "comment" => [
+                    "class" => "form-control",
                     "type" => "textarea",
                     "validation" => ["not_empty"],
                 ],
                 "submit" => [
+                    "class" => "btn btn-primary",
                     "type" => "submit",
                     "value" => "Send comment",
                     "callback" => [$this, "callbackSubmit"],

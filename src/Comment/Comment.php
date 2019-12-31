@@ -4,6 +4,7 @@ namespace Blixter\Comment;
 
 // use Anax\DatabaseActiveRecord\ActiveRecordModel;
 use Blixter\ActiveRecord\ActiveRecordModel;
+use Blixter\Answer\Answer;
 
 /**
  * A database driven model using the Active Record design pattern.
@@ -70,4 +71,47 @@ class Comment extends ActiveRecordModel
         );
     }
 
+    /**
+     * Returns all comments by user sorted by date.
+     *
+     * @param integer $uId UserId of User.
+     *
+     * @return array $comments by the User.
+     */
+    public function getCommentsForUser($uId): array
+    {
+
+        $comments = $this->findAllWhereJoinOrderBy(
+            "userId = ?", // Where
+            $uId, // Value
+            "User", // Table to join
+            "Comment.userId = User.id", // Join on
+            "created", // Order By
+            "Comment.*, User.username, User.email" // Select
+        );
+
+        return $comments;
+    }
+
+    /**
+     * Returns questionId for the comment
+     *
+     * @param integer $id id of the comment.
+     *
+     * @return string $questionId for the comment.
+     */
+    public function getQuestionIdForComment($id): string
+    {
+        $currentComment = $this->findWhere("id = ?", $id);
+        $postId = $currentComment->postId;
+        if ($currentComment->type == "question") {
+            return $postId;
+        } else {
+            global $di;
+            $answer = new Answer();
+            $answer->setDb($di->get("dbqb"));
+            $currentAnswer = $answer->findWhere("id = ?", $postId);
+            return $currentAnswer->questionId;
+        }
+    }
 }
