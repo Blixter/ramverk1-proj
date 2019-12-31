@@ -12,7 +12,8 @@ INSERT INTO Tag VALUES
     ("3", "PHP"),
     ("4", "SQL"),
     ("5", "Framework"),
-    ("6", "OOP")
+    ("6", "OOP"),
+    ("7", "Other")
 ;
 
 -- DELETE FROM Question;

@@ -22,6 +22,7 @@ CREATE TABLE Answer (
     "userId" INTEGER NOT NULL, 
     "answer" TEXT, 
     "created" DATETIME,
+    "accepted" BOOLEAN NOT NULL DEFAULT false,
     "points" INTEGER NOT NULL DEFAULT 0
 );
 
@@ -52,6 +53,17 @@ CREATE TABLE UserVoteOnQuestion (
     "id" INTEGER PRIMARY KEY NOT NULL,
     "userId" INTEGER NOT NULL,
     "questionId" INTEGER NOT NULL,
+    "vote" TEXT 
+);
+
+--
+-- Table UserVoteOnAnswer
+--
+DROP TABLE IF EXISTS UserVoteOnAnswer;
+CREATE TABLE UserVoteOnAnswer (
+    "id" INTEGER PRIMARY KEY NOT NULL,
+    "userId" INTEGER NOT NULL,
+    "answerId" INTEGER NOT NULL,
     "vote" TEXT 
 );
 
