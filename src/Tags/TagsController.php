@@ -4,8 +4,10 @@ namespace Blixter\Tags;
 
 use Anax\Commons\ContainerInjectableInterface;
 use Anax\Commons\ContainerInjectableTrait;
+use Blixter\Answer\Answer;
 use Blixter\Question\Tag;
 use Blixter\Question\TagToQuestion;
+use Michelf\MarkdownExtra;
 
 // use Anax\Route\Exception\ForbiddenException;
 // use Anax\Route\Exception\NotFoundException;
@@ -34,6 +36,8 @@ class TagsController implements ContainerInjectableInterface
     {
         $this->tags = new Tag();
         $this->tags->setDb($this->di->get("dbqb"));
+        $this->answer = new Answer();
+        $this->answer->setDb($this->di->get("dbqb"));
         $this->tag2quest = new TagToQuestion();
         $this->tag2quest->setDb($this->di->get("dbqb"));
     }
@@ -74,23 +78,32 @@ class TagsController implements ContainerInjectableInterface
     {
         $page = $this->di->get("page");
 
-        $questions = $this->tag2quest->getQuestionsForTag($this->di, $id);
+        $questions = $this->tag2quest->getQuestionsForTag($id);
 
         $qWithTags = [];
 
         for ($i = 0; $i < count($questions); $i++) {
 
-            $currentTagIds = $this->tag2quest->getTagsForQuestion($this->di, $questions[$i]->QuestionId);
-            $currentTags = $this->tags->getTagInfo($this->di, $currentTagIds);
+            $currentTags = $this->tag2quest->findAllWhereJoin(
+                "TagToQuestion.questionId = ?", // Where
+                $questions[$i]->id, // Value
+                "Tag", // Table to join
+                "Tag.id = TagToQuestion.tagId", // Join on
+                "TagToQuestion.*, Tag.tagName" // Select
+            );
 
+            $answerCount = $this->answer->getAnswersCountForQuestion($questions[$i]->id);
+            $questionParsed = MarkdownExtra::defaultTransform($questions[$i]->question);
             array_push($qWithTags,
                 [
                     "question" => $questions[$i],
                     "tags" => $currentTags,
+                    "questionParsed" => $questionParsed,
+                    "answerCount" => $answerCount[0]->count,
                 ]);
         };
 
-        $page->add("tags/tag", [
+        $page->add("tags/index", [
             "questions" => $qWithTags,
         ]);
 
@@ -98,5 +111,4 @@ class TagsController implements ContainerInjectableInterface
             "title" => "Questions with tag",
         ]);
     }
-
 }
