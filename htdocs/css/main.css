@@ -170,8 +170,16 @@
     top: -.5em;
   }
   
+  .a-inherit a {
+    color: inherit !important;
+  }
+
+  .a-inherit a:visited {
+    color: inherit !important;
+  }
+  
   a {
-    color: #007bff;
+    color: #007bff !important;
     text-decoration: none !important;
     background-color: transparent;
   }
@@ -185,9 +193,6 @@
     text-decoration: underline;
   }
   
-  .a-inherit a:visited, a {
-    color: inherit !important;
-  }
   
   a:not([href]) {
     color: inherit;
