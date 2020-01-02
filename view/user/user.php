@@ -11,8 +11,8 @@ $com = new Comment;
 $com->setDb($this->di->get("dbqb"));
 ?>
 <img src="<?=$gravatar->getGravatar($user->email)?>" alt="Gravatar">
-<p>Reputation: <?=$user->reputation?></p>
-<p>Total votes: <?=$user->votes?></p>
+<div>Reputation: <?=$user->reputation?></div>
+<div>Total votes: <?=$user->votes?></div>
 <h1 class="text-center">Overview - <?=$user->username?></h1>
 <h2>Questions</h2>
 <table class="table">

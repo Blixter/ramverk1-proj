@@ -113,6 +113,45 @@ class User extends ActiveRecordModel
          + $this->getAnswerPointsByUser($id)->totalPoints;
     }
 
+    
+    /**
+     * Returns activepoints for the user
+     *
+     *
+     * @return string User total points
+     */
+    public function getActivePointsByUser($id): object
+    {
+        $params = [$id];
+        $this->checkDb();
+        return $this->db->connect()
+            ->select("User.id,
+                User.userName,
+                User.email,
+                ((SELECT count(Question.id) FROM Question WHERE Question.userId = User.id) +
+                (SELECT count(Answer.id) FROM Answer WHERE Answer.userId = User.id) +
+                (SELECT count(Comment.id) FROM Comment WHERE Comment.userId = User.id)) as activepoints")
+            ->from($this->tableName)
+            ->orderBy("activepoints DESC")
+            ->groupBy("User.id")
+            ->where("User.id = ?")
+            ->execute($params)
+            ->fetchInto($this);
+    }
+
+        /**
+     * Returns email and username for user.
+     *
+     *
+     * @return string User total points
+     */
+    public function getReputationByUser($id): string
+    {
+        return $this->getQuestionPointsByUser($id)->totalPoints
+         + $this->getAnswerPointsByUser($id)->totalPoints 
+         + $this->getActivePointsByUser($id)->activepoints;
+    }
+
     /**
      * Returns email and username for user.
      *

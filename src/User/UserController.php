@@ -154,7 +154,7 @@ class UserController implements ContainerInjectableInterface
         $comments = $comment->getCommentsForUser($id);
         $user = $user->getUserInfo($id);
         $user->votes = $user->getVotesByUser($id);
-        $user->reputation = $user->getPointsByUser($id);
+        $user->reputation = $user->getReputationByUser($id);
 
         $page->add("user/user", [
             "questions" => $questions,
