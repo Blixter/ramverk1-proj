@@ -97,7 +97,6 @@ class UserController implements ContainerInjectableInterface
      */
     public function logoutAction(): object
     {
-        $page = $this->di->get("page");
         $session = $this->di->get("session");
         $session->delete("login");
 
