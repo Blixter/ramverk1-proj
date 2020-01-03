@@ -3,8 +3,8 @@
 namespace Blixter\Answer\HTMLForm;
 
 use Anax\HTMLForm\FormModel;
-use Psr\Container\ContainerInterface;
 use Blixter\Answer\Answer;
+use Psr\Container\ContainerInterface;
 
 /**
  * Form to update an item.
@@ -25,6 +25,7 @@ class UpdateForm extends FormModel
             [
                 "id" => __CLASS__,
                 "legend" => "Update details of the item",
+                "escape-values" => false,
             ],
             [
                 "id" => [
@@ -49,26 +50,24 @@ class UpdateForm extends FormModel
                 "submit" => [
                     "type" => "submit",
                     "value" => "Save",
-                    "callback" => [$this, "callbackSubmit"]
+                    "callback" => [$this, "callbackSubmit"],
                 ],
 
                 "reset" => [
-                    "type"      => "reset",
+                    "type" => "reset",
                 ],
             ]
         );
     }
 
-
-
     /**
      * Get details on item to load form with.
      *
      * @param integer $id get details on item with id.
-     * 
+     *
      * @return Answer
      */
-    public function getItemDetails($id) : object
+    public function getItemDetails($id): object
     {
         $answer = new Answer();
         $answer->setDb($this->di->get("dbqb"));
@@ -76,15 +75,13 @@ class UpdateForm extends FormModel
         return $answer;
     }
 
-
-
     /**
      * Callback for submit-button which should return true if it could
      * carry out its work and false if something failed.
      *
      * @return bool true if okey, false if something went wrong.
      */
-    public function callbackSubmit() : bool
+    public function callbackSubmit(): bool
     {
         $answer = new Answer();
         $answer->setDb($this->di->get("dbqb"));
@@ -94,8 +91,6 @@ class UpdateForm extends FormModel
         $answer->save();
         return true;
     }
-
-
 
     // /**
     //  * Callback what to do if the form was successfully submitted, this
@@ -107,8 +102,6 @@ class UpdateForm extends FormModel
     //     $this->di->get("response")->redirect("answer")->send();
     //     //$this->di->get("response")->redirect("answer/update/{$answer->id}");
     // }
-
-
 
     // /**
     //  * Callback what to do if the form was unsuccessfully submitted, this

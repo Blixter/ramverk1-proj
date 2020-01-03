@@ -3,14 +3,14 @@
 namespace Blixter\Answer;
 
 // use Anax\DatabaseActiveRecord\ActiveRecordModel;
-use Blixter\ActiveRecord\ActiveRecordModel;
+use Blixter\ActiveRecord\ActiveRecordModelExtra;
 use Blixter\Comment\Comment;
-use Michelf\MarkdownExtra;
+use Blixter\Filter\MdFilter;
 
 /**
  * A database driven model using the Active Record design pattern.
  */
-class Answer extends ActiveRecordModel
+class Answer extends ActiveRecordModelExtra
 {
     /**
      * @var string $tableName name of the database table.
@@ -44,6 +44,7 @@ class Answer extends ActiveRecordModel
      */
     public function getAllAnswers($di, $questionId): array
     {
+        $filter = new MdFilter();
         // $where, $value, $joinTable, $joinOn, $select
         $answers = $this->findAllWhereJoin(
             "Answer.questionId = ?", // Where
@@ -53,12 +54,36 @@ class Answer extends ActiveRecordModel
             "Answer.*, User.username, User.email" // Select
         );
         foreach ((array) $answers as $key => $value) {
-            $value->answerParsed = MarkdownExtra::defaultTransform($value->answer);
+            $value->answerParsed = $filter->markdown($value->answer);
             $comment = new Comment();
             $comment->setDb($di->get("dbqb"));
             $answers[$key]->comments = $comment->getAllComments([$value->id, "answer"]);
             foreach ($answers[$key]->comments as $comment) {
-                $comment->commentParsed = MarkdownExtra::defaultTransform($comment->comment);
+                $comment->commentParsed = $filter->markdown($comment->comment);
+            }
+        }
+        return $answers;
+    }
+
+    /**
+     * Returns all answers with comments.
+     *
+     * @param $di A service container.
+     * @param array $answers in array
+     *
+     * @return array $comments by the for the answers.
+     */
+    public function getCommentsForAnswers($di, $answers): array
+    {
+        $filter = new MdFilter();
+
+        foreach ((array) $answers as $key => $value) {
+            $value->answerParsed = $filter->markdown($value->answer);
+            $comment = new Comment();
+            $comment->setDb($di->get("dbqb"));
+            $answers[$key]->comments = $comment->getAllComments([$value->id, "answer"]);
+            foreach ($answers[$key]->comments as $comment) {
+                $comment->commentParsed = $filter->markdown($comment->comment);
             }
         }
         return $answers;
@@ -78,6 +103,28 @@ class Answer extends ActiveRecordModel
             $id, // value
             "count(id) as count" // select
         );
+    }
+
+    /**
+     * Returns all answers for the question.
+     *
+     * @param integer $questionId id of the question.
+     * @param string $orderBy string on what to sort, example: 'CREATED desc'
+     *
+     * @return array $answers for the question.
+     */
+    public function findAllAnswersSorted($questionId, $orderBy): array
+    {
+        $this->checkDb();
+        $params = [$questionId];
+        return $this->db->connect()
+            ->select("Answer.*, User.username, User.email")
+            ->from($this->tableName)
+            ->where("Answer.questionId = ?")
+            ->join("User", "User.id = Answer.userId")
+            ->orderBy($orderBy)
+            ->execute($params)
+            ->fetchAllClass(get_class($this));
     }
 
     /**
@@ -121,16 +168,23 @@ class Answer extends ActiveRecordModel
     }
 
     /**
-     * Vote on an answer
+     * Vote on answer
      *
+     * @param integer $answerId Id of the answer
+     * @param string $vote up or down vote
+     * @param integer $userId Id of the user
+     * @param object $di service container
      *
-     * @return void
+     * @return null
      */
     public function voteAnswer($answerId, $vote, $userId, $di)
     {
 
         $userVoteOnA = new UserVoteOnAnswer();
         $userVoteOnA->setDb($di->get("dbqb"));
+        $userVoteOnA->answerId = $answerId;
+        $userVoteOnA->userId = $userId;
+        $userVoteOnA->vote = $vote;
 
         $voted = $userVoteOnA->checkIfVoted($answerId, $userId);
         $answer = $this->findById($answerId);
@@ -139,53 +193,85 @@ class Answer extends ActiveRecordModel
         $this->userId = $answer->userId;
         $this->created = $answer->created;
         $this->points = $answer->points;
-        $this->accepted = $answer->accepted;
 
         if ($voted) {
             $result = $userVoteOnA->findWhere("answerId = ? AND userId = ?", [$answerId, $userId]);
             $previousVote = $result->vote;
-            if ($previousVote == "up" and $vote == "up") {
-                $this->points = $this->points - 1;
-                $userVoteOnA->deleteWhere("answerId = ? AND userId = ?", [$answerId, $userId]);
-                return $this->updateWhere("id = ?", $answerId);
-            } else if ($previousVote == "down" and $vote == "down") {
-                $this->points = $this->points + 1;
-                $userVoteOnA->deleteWhere("answerId = ? AND userId = ?", [$answerId, $userId]);
-                return $this->updateWhere("id = ?", $answerId);
-            } else if ($previousVote == "up") {
-                $this->points = $this->points - 1;
-            } else if ($previousVote == "down") {
-                $this->points = $this->points + 1;
+            if ($this->checkPreviousVote($previousVote, $vote, $answerId, $userId, $di)) {
+                return;
             }
-            $this->updateWhere("id = ?", $answerId);
-            $userVoteOnA->deleteWhere("answerId = ? AND userId = ?", [$answerId, $userId]);
-
-            if ($vote == "up") {
-                $this->points = $this->points + 1;
-            } else {
-                $this->points = $this->points - 1;
-            }
-
-            $userVoteOnA = new UserVoteOnAnswer();
-            $userVoteOnA->setDb($di->get("dbqb"));
-            $userVoteOnA->answerId = $answerId;
-            $userVoteOnA->userId = $userId;
-            $userVoteOnA->vote = $vote;
+            $this->checkVote($vote);
             $userVoteOnA->save();
         } else {
-            if ($vote == "up") {
-                $this->points = $this->points + 1;
-            } else {
-                $this->points = $this->points - 1;
-            }
-            $userVoteOnA = new UserVoteOnAnswer();
-            $userVoteOnA->setDb($di->get("dbqb"));
-            $userVoteOnA->answerId = $answerId;
-            $userVoteOnA->userId = $userId;
-            $userVoteOnA->vote = $vote;
+            $this->checkVote($vote);
             $userVoteOnA->save();
         }
         return $this->updateWhere("id = ?", $answerId);
+    }
+
+    /**
+     * Delete vote
+     *
+     * @param integer $answerId Id of the answer
+     * @param integer $userId Id of the user
+     * @param object $di service container
+     *
+     * @return void
+     */
+    public function deleteVote($answerId, $userId, $di)
+    {
+        $userVoteOnA = new UserVoteOnAnswer();
+        $userVoteOnA->setDb($di->get("dbqb"));
+        $userVoteOnA->deleteWhere("answerId = ? AND userId = ?", [$answerId, $userId]);
+    }
+
+    /**
+     * Check previous vote
+     *
+     * @param string $previousVote up or down vote
+     * @param string $vote up or down vote
+     * @param integer $answerId Id of the answer
+     * @param integer $userId Id of the user
+     * @param object $di service container
+     *
+     * @return void
+     */
+    public function checkPreviousVote($previousVote, $vote, $answerId, $userId, $di)
+    {
+
+        if ($previousVote == "up" and $vote == "up") {
+            $this->points = $this->points - 1;
+            $this->deleteVote($answerId, $userId, $di);
+            $this->updateWhere("id = ?", $answerId);
+            return true;
+        } else if ($previousVote == "down" and $vote == "down") {
+            $this->points = $this->points + 1;
+            $this->deleteVote($answerId, $userId, $di);
+            $this->updateWhere("id = ?", $answerId);
+            return true;
+        } else if ($previousVote == "up") {
+            $this->points = $this->points - 1;
+        } else if ($previousVote == "down") {
+            $this->points = $this->points + 1;
+        }
+        $this->updateWhere("id = ?", $answerId);
+        $this->deleteVote($answerId, $userId, $di);
+    }
+
+    /**
+     * Check Vote and update points.
+     *
+     * @param string $vote up or down vote
+     *
+     * @return void
+     */
+    public function checkVote($vote)
+    {
+        if ($vote == "up") {
+            $this->points = $this->points + 1;
+        } else {
+            $this->points = $this->points - 1;
+        }
     }
 
     /**

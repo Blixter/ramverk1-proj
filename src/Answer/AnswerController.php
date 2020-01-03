@@ -9,8 +9,8 @@ use Blixter\Answer\HTMLForm\DeleteForm;
 use Blixter\Answer\HTMLForm\UpdateForm;
 use Blixter\Comment\Comment;
 use Blixter\Comment\HTMLForm\CommentForm;
+use Blixter\Filter\MdFilter;
 use Blixter\Question\Question;
-use Michelf\MarkdownExtra;
 
 // use Anax\Route\Exception\ForbiddenException;
 // use Anax\Route\Exception\NotFoundException;
@@ -37,6 +37,7 @@ class AnswerController implements ContainerInjectableInterface
      */
     public function initialize(): void
     {
+        $this->filter = new MdFilter();
         $this->comment = new Comment();
         $this->comment->setDb($this->di->get("dbqb"));
     }
@@ -147,7 +148,7 @@ class AnswerController implements ContainerInjectableInterface
         $answer = new Answer();
         $answer->setDb($this->di->get("dbqb"));
 
-        $questionParsed = MarkdownExtra::defaultTransform($question->question);
+        $questionParsed = $this->filter->markdown($question->question);
 
         $page->add("question/crud/answer", [
             "question" => $question,
@@ -188,7 +189,7 @@ class AnswerController implements ContainerInjectableInterface
         );
         // $question->getQuestionObject("Question.id", $questionId);
 
-        $answerParsed = MarkdownExtra::defaultTransform($answer->answer);
+        $answerParsed = $this->filter->markdown($answer->answer);
 
         $comments = $this->comment->findAllWhereJoin(
             "Comment.postId = ? AND Comment.type = ?", // Where
@@ -199,7 +200,7 @@ class AnswerController implements ContainerInjectableInterface
         );
 
         foreach ($comments as $comment) {
-            $comment->commentParsed = MarkdownExtra::defaultTransform($comment->comment);
+            $comment->commentParsed = $this->filter->markdown($comment->comment);
         }
 
         // $answer = new Answer();
@@ -235,7 +236,6 @@ class AnswerController implements ContainerInjectableInterface
      */
     public function voteAction()
     {
-        $page = $this->di->get("page");
         $request = $this->di->get("request");
         $vote = $request->getGet("vote");
         $questionId = $request->getGet("questionId");
@@ -256,9 +256,7 @@ class AnswerController implements ContainerInjectableInterface
      */
     public function acceptAction()
     {
-        $session = $this->di->get("session");
         $userId = $this->di->session->get("login") ?? null;
-        $page = $this->di->get("page");
         $request = $this->di->get("request");
         $questionId = $request->getGet("questionId");
         $answerId = $request->getGet("answerId");
