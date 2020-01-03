@@ -6,12 +6,12 @@ use Anax\Commons\ContainerInjectableInterface;
 use Anax\Commons\ContainerInjectableTrait;
 use Blixter\Answer\Answer;
 use Blixter\Comment\Comment;
+use Blixter\Filter\MdFilter;
 use Blixter\Question\Question;
 use Blixter\Question\Tag;
 use Blixter\Question\TagToQuestion;
 use Blixter\Startpage\Startpage;
 use Blixter\User\User;
-use Michelf\MarkdownExtra;
 
 // use Anax\Route\Exception\ForbiddenException;
 // use Anax\Route\Exception\NotFoundException;
@@ -38,6 +38,7 @@ class StartpageController implements ContainerInjectableInterface
      */
     public function initialize(): void
     {
+        $this->filter = new MdFilter();
         $this->question = new Question();
         $this->question->setDb($this->di->get("dbqb"));
         $this->user = new User();
@@ -66,28 +67,29 @@ class StartpageController implements ContainerInjectableInterface
 
         $latestQWithTags = [];
 
-        for ($i = 0; $i < count($latestQuestions); $i++) {
+        foreach ($latestQuestions as $key => $value) {
 
             $currentTags = $this->tag2question->findAllWhereJoin(
                 "TagToQuestion.questionId = ?", // Where
-                $latestQuestions[$i]->id, // Value
+                $latestQuestions[$key]->id, // Value
                 "Tag", // Table to join
                 "Tag.id = TagToQuestion.tagId", // Join on
                 "TagToQuestion.*, Tag.tagName" // Select
             );
 
-            $answerCount = $this->answer->getAnswersCountForQuestion($latestQuestions[$i]->id);
+            $answerCount = $this->answer->getAnswersCountForQuestion($latestQuestions[$key]->id);
 
-            $questionParsed = MarkdownExtra::defaultTransform($latestQuestions[$i]->question);
+            $questionParsed = $this->filter->markdown($latestQuestions[$key]->question);
 
             array_push($latestQWithTags,
                 [
-                    "question" => $latestQuestions[$i],
+                    "question" => $latestQuestions[$key],
                     "tags" => $currentTags,
                     "questionParsed" => $questionParsed,
                     "answerCount" => $answerCount[0]->count,
                 ]);
-        };
+
+        }
 
         $popularTags = $this->tag2question->getMostPopularTags(3);
 

@@ -7,13 +7,13 @@ use Anax\Commons\ContainerInjectableTrait;
 use Blixter\Answer\Answer;
 use Blixter\Comment\Comment;
 use Blixter\Comment\HTMLForm\CommentForm;
+use Blixter\Filter\MdFilter;
 use Blixter\Question\HTMLForm\CreateForm;
 use Blixter\Question\HTMLForm\DeleteForm;
 use Blixter\Question\HTMLForm\UpdateForm;
 use Blixter\Question\Question;
 use Blixter\Question\Tag;
 use Blixter\Question\TagToQuestion;
-use Michelf\MarkdownExtra;
 
 // use Anax\Route\Exception\ForbiddenException;
 // use Anax\Route\Exception\NotFoundException;
@@ -40,6 +40,7 @@ class QuestionController implements ContainerInjectableInterface
      */
     public function initialize(): void
     {
+        $this->filter = new MdFilter();
         $this->tag = new Tag();
         $this->tag->setDb($this->di->get("dbqb"));
         $this->tag2question = new TagToQuestion();
@@ -64,28 +65,29 @@ class QuestionController implements ContainerInjectableInterface
 
         $qWithTags = [];
 
-        for ($i = 0; $i < count($allQuestions); $i++) {
+        foreach ($allQuestions as $key => $value) {
 
             $currentTags = $this->tag2question->findAllWhereJoin(
                 "TagToQuestion.questionId = ?", // Where
-                $allQuestions[$i]->id, // Value
+                $allQuestions[$key]->id, // Value
                 "Tag", // Table to join
                 "Tag.id = TagToQuestion.tagId", // Join on
                 "TagToQuestion.*, Tag.tagName" // Select
             );
 
-            $answerCount = $this->answer->getAnswersCountForQuestion($allQuestions[$i]->id);
+            $answerCount = $this->answer->getAnswersCountForQuestion($allQuestions[$key]->id);
 
-            $questionParsed = MarkdownExtra::defaultTransform($allQuestions[$i]->question);
+            $questionParsed = $this->filter->markdown($allQuestions[$key]->question);
 
             array_push($qWithTags,
                 [
-                    "question" => $allQuestions[$i],
+                    "question" => $allQuestions[$key],
                     "tags" => $currentTags,
                     "questionParsed" => $questionParsed,
                     "answerCount" => $answerCount[0]->count,
                 ]);
-        };
+
+        }
 
         $page->add("question/index", [
             "questions" => $qWithTags,
@@ -165,41 +167,6 @@ class QuestionController implements ContainerInjectableInterface
      *
      * @return object as a response object
      */
-    public function userAction(int $id): object
-    {
-        $page = $this->di->get("page");
-        $question = new Question();
-        $questions = $question->getQuestionsForUser($this->di, $id);
-
-        $qWithTags = [];
-
-        for ($i = 0; $i < count($questions); $i++) {
-            $currentTagIds = $this->tag2question->getTagsForQuestion($this->di, $questions[$i]->id);
-            $currentTags = $this->tag->getTagInfo($this->di, $currentTagIds);
-
-            array_push($qWithTags,
-                [
-                    "question" => $questions[$i],
-                    "tags" => $currentTags,
-                ]);
-        };
-
-        $page->add("question/user", [
-            "questions" => $qWithTags,
-        ]);
-
-        return $page->render([
-            "title" => "User questions",
-        ]);
-    }
-
-    /**
-     * Handler with form to update an item.
-     *
-     * @param int $id the id to update.
-     *
-     * @return object as a response object
-     */
     public function postAction(int $id): object
     {
         $page = $this->di->get("page");
@@ -222,7 +189,7 @@ class QuestionController implements ContainerInjectableInterface
             "TagToQuestion.*, Tag.tagName" // Select
         );
 
-        $questionParsed = MarkdownExtra::defaultTransform($question->question);
+        $questionParsed = $this->filter->markdown($question->question);
 
         $comments = $this->comment->findAllWhereJoin(
             "Comment.postId = ? AND Comment.type = ?", // Where
@@ -233,10 +200,14 @@ class QuestionController implements ContainerInjectableInterface
         );
 
         foreach ($comments as $comment) {
-            $comment->commentParsed = MarkdownExtra::defaultTransform($comment->comment);
+            $comment->commentParsed = $this->filter->markdown($comment->comment);
         }
 
-        $answers = $this->answer->getAllAnswers($this->di, $id);
+        $request = $this->di->get("request");
+        $sort = $request->getGet("sort") ?? "Created";
+
+        $answers = $this->answer->findAllAnswersSorted($id, "$sort DESC");
+        $answers = $this->answer->getCommentsForAnswers($this->di, $answers);
         $answerCount = $this->answer->getAnswersCountForQuestion($id);
 
         $page->add("question/post", [
@@ -275,12 +246,12 @@ class QuestionController implements ContainerInjectableInterface
             "Question.*, User.username, User.email" // Select
         );
 
-        $questionParsed = MarkdownExtra::defaultTransform($question->question);
+        $questionParsed = $this->filter->markdown($question->question);
 
         $comments = $this->comment->getAllComments([$id, "question"]);
 
         foreach ($comments as $comment) {
-            $comment->commentParsed = MarkdownExtra::defaultTransform($comment->comment);
+            $comment->commentParsed = $this->filter->markdown($comment->comment);
         }
 
         $page->add("question/crud/comment", [
@@ -304,7 +275,6 @@ class QuestionController implements ContainerInjectableInterface
      */
     public function voteAction()
     {
-        $page = $this->di->get("page");
         $request = $this->di->get("request");
         $vote = $request->getGet("vote");
         $questionId = $request->getGet("questionId");

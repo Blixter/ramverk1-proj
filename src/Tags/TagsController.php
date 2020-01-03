@@ -5,9 +5,9 @@ namespace Blixter\Tags;
 use Anax\Commons\ContainerInjectableInterface;
 use Anax\Commons\ContainerInjectableTrait;
 use Blixter\Answer\Answer;
+use Blixter\Filter\MdFilter;
 use Blixter\Question\Tag;
 use Blixter\Question\TagToQuestion;
-use Michelf\MarkdownExtra;
 
 // use Anax\Route\Exception\ForbiddenException;
 // use Anax\Route\Exception\NotFoundException;
@@ -34,6 +34,7 @@ class TagsController implements ContainerInjectableInterface
      */
     public function initialize(): void
     {
+        $this->filter = new MdFilter();
         $this->tags = new Tag();
         $this->tags->setDb($this->di->get("dbqb"));
         $this->answer = new Answer();
@@ -82,26 +83,29 @@ class TagsController implements ContainerInjectableInterface
 
         $qWithTags = [];
 
-        for ($i = 0; $i < count($questions); $i++) {
+        foreach ($questions as $key => $value) {
 
             $currentTags = $this->tag2quest->findAllWhereJoin(
                 "TagToQuestion.questionId = ?", // Where
-                $questions[$i]->id, // Value
+                $questions[$key]->id, // Value
                 "Tag", // Table to join
                 "Tag.id = TagToQuestion.tagId", // Join on
                 "TagToQuestion.*, Tag.tagName" // Select
             );
 
-            $answerCount = $this->answer->getAnswersCountForQuestion($questions[$i]->id);
-            $questionParsed = MarkdownExtra::defaultTransform($questions[$i]->question);
+            $answerCount = $this->answer->getAnswersCountForQuestion($questions[$key]->id);
+
+            $questionParsed = $this->filter->markdown($questions[$key]->question);
+
             array_push($qWithTags,
                 [
-                    "question" => $questions[$i],
+                    "question" => $questions[$key],
                     "tags" => $currentTags,
                     "questionParsed" => $questionParsed,
                     "answerCount" => $answerCount[0]->count,
                 ]);
-        };
+
+        }
 
         $page->add("tags/index", [
             "questions" => $qWithTags,
