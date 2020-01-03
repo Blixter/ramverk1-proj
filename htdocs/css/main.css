@@ -94,6 +94,10 @@
     border: none;
     color: inherit;
   }
+
+  .rm-max .rm-small .rm-button {
+    color: inherit !important;
+  }
   
   abbr[title],
   abbr[data-original-title] {
@@ -2207,7 +2211,7 @@
   }
   
   textarea.form-control {
-    height: auto;
+    min-height: 300px !important;
   }
   
   .form-group {
