@@ -3,13 +3,13 @@
 namespace Blixter\Comment;
 
 // use Anax\DatabaseActiveRecord\ActiveRecordModel;
-use Blixter\ActiveRecord\ActiveRecordModel;
+use Blixter\ActiveRecord\ActiveRecordModelExtra;
 use Blixter\Answer\Answer;
 
 /**
  * A database driven model using the Active Record design pattern.
  */
-class Comment extends ActiveRecordModel
+class Comment extends ActiveRecordModelExtra
 {
     /**
      * @var string $tableName name of the database table.

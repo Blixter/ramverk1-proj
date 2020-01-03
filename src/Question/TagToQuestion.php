@@ -3,12 +3,13 @@
 namespace Blixter\Question;
 
 // use Anax\DatabaseActiveRecord\ActiveRecordModel;
-use Blixter\ActiveRecord\ActiveRecordModel;
+
+use Blixter\ActiveRecord\ActiveRecordModelExtra;
 
 /**
  * A database driven model using the Active Record design pattern.
  */
-class TagToQuestion extends ActiveRecordModel
+class TagToQuestion extends ActiveRecordModelExtra
 {
     /**
      * @var string $tableName name of the database table.

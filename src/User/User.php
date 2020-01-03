@@ -2,8 +2,9 @@
 
 namespace Blixter\User;
 
-// use Anax\DatabaseActiveRecord\ActiveRecordModel;
-use Blixter\ActiveRecord\ActiveRecordModel;
+use Anax\DatabaseActiveRecord\ActiveRecordModel;
+
+// use Blixter\ActiveRecord\ActiveRecordModel;
 
 /**
  * A database driven model.
@@ -113,7 +114,6 @@ class User extends ActiveRecordModel
          + $this->getAnswerPointsByUser($id)->totalPoints;
     }
 
-    
     /**
      * Returns activepoints for the user
      *
@@ -139,7 +139,7 @@ class User extends ActiveRecordModel
             ->fetchInto($this);
     }
 
-        /**
+    /**
      * Returns email and username for user.
      *
      *
@@ -148,7 +148,7 @@ class User extends ActiveRecordModel
     public function getReputationByUser($id): string
     {
         return $this->getQuestionPointsByUser($id)->totalPoints
-         + $this->getAnswerPointsByUser($id)->totalPoints 
+         + $this->getAnswerPointsByUser($id)->totalPoints
          + $this->getActivePointsByUser($id)->activepoints;
     }
 
