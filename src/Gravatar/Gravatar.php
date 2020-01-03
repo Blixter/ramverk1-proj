@@ -19,6 +19,7 @@ class Gravatar
      * @param array $atts Optional, additional key/value attributes to include in the IMG tag
      * @return String containing either just a URL or a complete image tag
      * @source https://gravatar.com/site/implement/images/php/
+     * @SuppressWarnings(PHPMD.ShortVariable)
      */
     public function getGravatar($email, $s = 80, $d = 'mp', $r = 'g', $img = false, $atts = array())
     {
