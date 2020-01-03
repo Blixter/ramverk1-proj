@@ -28,7 +28,7 @@ $com->setDb($this->di->get("dbqb"));
     <?php foreach ($questions as $question): ?>
         <tr>
             <td><?=mb_substr(($question->question), 0, 30) . " ..."?></td>
-            <td><?=date('d F Y, h:i:s', $question->created)?></td>
+            <td><?=date('d F Y, H:i:s', $question->created)?></td>
             <td><?=$question->points?></td>
             <td><a href="<?=url("question/post/$question->id")?>">Go to post</a></td>
         </tr>
@@ -50,7 +50,7 @@ $com->setDb($this->di->get("dbqb"));
     <?php foreach ($answers as $answer): ?>
         <tr>
             <td><?=mb_substr(($answer->answer), 0, 30) . " ..."?></td>
-            <td><?=date('d F Y, h:i:s', $answer->created)?></td>
+            <td><?=date('d F Y, H:i:s', $answer->created)?></td>
             <td><?=$answer->points?></td>
             <td><a href="<?=url("question/post/$answer->questionId")?>">Go to post</a></td>
         </tr>
@@ -75,7 +75,7 @@ $postId = $com->getQuestionIdForComment($currId);?>
 
         <tr>
             <td><?=mb_substr(($comment->comment), 0, 30) . " ..."?></td>
-            <td><?=date('d F Y, h:i:s', $comment->created)?></td>
+            <td><?=date('d F Y, H:i:s', $comment->created)?></td>
             <td><?=$comment->type?></td>
             <td><a href="<?=url("question/post/$postId")?>">Go to post</a></td>
         </tr>

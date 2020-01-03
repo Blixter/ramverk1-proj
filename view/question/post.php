@@ -84,7 +84,7 @@ if ($userId) {
                 <div class="col-sm-3 text-center">
                     <div class="pt-4">
                         <small><?=date('d/m Y', $question->created)?></small>
-                        <small><?=date('h:i', $question->created)?></small>
+                        <small><?=date('H:i', $question->created)?></small>
                     </div>
                 </div>
                 <div class="col-sm-2 text-center">
@@ -99,14 +99,27 @@ if ($userId) {
 <?php foreach ($comments as $comment): ?>
     <div class="">
         <div class="border-bottom pl-5 p-0 mt-1 mb-1">
-                <small><?=date('d F Y, h:i:s', $comment->created)?> by <a href="<?=url("user/view/{$comment->userId}")?>"><strong><?=$comment->username?></strong></a></small>
+                <small><?=date('d F Y, H:i:s', $comment->created)?> by <a href="<?=url("user/view/{$comment->userId}")?>"><strong><?=$comment->username?></strong></a></small>
                 <?=$comment->commentParsed?>
             </div>
         </div>
 
     <?php endforeach?>
 
-<?=$answerCount > 0 ? "<h1>$answerCount Answers</h2>" : null;?>
+<?php if ($answerCount > 0): ?>
+    <h1><?=$answerCount?> Answers</h1>
+    <div class="container">
+        <div class="rows justify-content-end">
+            <div class="col-sm-3">
+                Sort on:
+                <a href="<?=url("question/post/" . $question->id . "?sort=Created")?>">Date</a>
+                |
+                <a href="<?=url("question/post/" . $question->id . "?sort=Points")?>">Points</a>
+        </div>
+    </div>
+<?php endif;?>
+
+
 <?php foreach ($answers as $answer): ?>
 <?php
 $answerVoteTextColorUp = null;
@@ -124,7 +137,7 @@ if ($userId) {
 ?>
 <div class="container border-bottom">
     <div class="rows">
-        <div class="col-sm-1 p-2 text-center">
+        <div class="col-1 p-2 text-center">
             <div class="d-flex flex-column mb-3 text-black-50">
                 <div class="p-2 <?=$answerVoteTextColorUp?>">
                     <form action=<?=url("answer/vote")?> method="get">
@@ -165,7 +178,7 @@ if ($userId) {
                 </div>
             </div>
         </div>
-        <div class="col-sm-11 p-2">
+        <div class="col-11 p-2">
             <div class="markdown"><?=$answer->answerParsed?></div>
         </div>
         <div class="container">
@@ -178,7 +191,7 @@ if ($userId) {
                 <div class="col-sm-3 text-center">
                     <div class="pt-4">
                         <small><?=date('d/m Y', $answer->created)?></small>
-                        <small><?=date('h:i', $answer->created)?></small>
+                        <small><?=date('H:i', $answer->created)?></small>
                     </div>
                 </div>
                 <div class="col-sm-2 text-center">
@@ -193,7 +206,7 @@ if ($userId) {
 <?php foreach ($answer->comments as $comment): ?>
     <div class="">
             <div class="border-bottom pl-5 p-0 mt-1 mb-1">
-                <small><?=date('d F Y, h:i:s', $comment->created)?> by <a href="<?=url("user/view/{$comment->userId}")?>"><strong><?=$comment->username?></strong></a></small>
+                <small><?=date('d F Y, H:i:s', $comment->created)?> by <a href="<?=url("user/view/{$comment->userId}")?>"><strong><?=$comment->username?></strong></a></small>
                 <?=$comment->commentParsed?>
             </div>
         </div>

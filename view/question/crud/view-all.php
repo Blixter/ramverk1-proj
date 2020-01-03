@@ -47,7 +47,7 @@ endif;
         <td><?=$item->title?></td>
         <td><?=$item->question?></td>
         <td><?=$item->userId?></td>
-        <td><?=date('d F Y, h:i:s', $item->created)?></td>
+        <td><?=date('d F Y, H:i:s', $item->created)?></td>
         <td><?=$item->points?></td>
     </tr>
     <?php endforeach;?>

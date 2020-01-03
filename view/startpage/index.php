@@ -23,7 +23,7 @@ $gravatar = new Gravatar;
                 <a href="<?=url("question/post/" . $question["question"]->id)?>">
                     <p style="margin: 0;"><?=$question["question"]->title?></p>
                 </a>
-                <div><?=substr($question["question"]->question, 0, 80)?>...</div>
+                <div><?=substr($question["questionParsed"], 0, 80)?>...</code></div>
                 <div class="container">
                     <div class="rows justify-content-start text-light a-inherit">
                         <?php foreach ($question["tags"] as $tag): ?>
@@ -33,7 +33,7 @@ $gravatar = new Gravatar;
                     </div>
                 </div>
                 <div class="col-sm-2">
-                    <small><?=date('d F Y, h:i', $question["question"]->created)?></small>
+                    <small><?=date('d F Y, H:i', $question["question"]->created)?></small>
                     <div><img src="<?=$gravatar->getGravatar($question["question"]->email, 50)?>"></div>
                     <p style="margin: 0;"><a href="<?=url("user/view/" . $question["question"]->userId)?>"><?=$question["question"]->username?></a></p>
             </div>
