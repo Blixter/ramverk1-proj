@@ -3,12 +3,12 @@
 namespace Blixter\Question;
 
 // use Anax\DatabaseActiveRecord\ActiveRecordModel;
-use Blixter\ActiveRecord\ActiveRecordModel;
+use Blixter\ActiveRecord\ActiveRecordModelExtra;
 
 /**
  * A database driven model using the Active Record design pattern.
  */
-class Question extends ActiveRecordModel
+class Question extends ActiveRecordModelExtra
 {
     /**
      * @var string $tableName name of the database table.
@@ -95,16 +95,23 @@ class Question extends ActiveRecordModel
     }
 
     /**
-     * Returns most active User
+     * Vote on question
      *
+     * @param integer $questionId Id of the question
+     * @param string $vote up or down vote
+     * @param integer $userId Id of the user
+     * @param object $di service container
      *
-     * @return array Most active user.
+     * @return null
      */
     public function voteQuestion($questionId, $vote, $userId, $di)
     {
 
         $userVoteOnQ = new UserVoteOnQuestion();
         $userVoteOnQ->setDb($di->get("dbqb"));
+        $userVoteOnQ->questionId = $questionId;
+        $userVoteOnQ->userId = $userId;
+        $userVoteOnQ->vote = $vote;
 
         $voted = $userVoteOnQ->checkIfVoted($questionId, $userId);
         $question = $this->findById($questionId);
@@ -118,76 +125,81 @@ class Question extends ActiveRecordModel
         if ($voted) {
             $result = $userVoteOnQ->findWhere("questionId = ? AND userId = ?", [$questionId, $userId]);
             $previousVote = $result->vote;
-            if ($previousVote == "up" and $vote == "up") {
-                $this->points = $this->points - 1;
-                $userVoteOnQ->deleteWhere("questionId = ? AND userId = ?", [$questionId, $userId]);
-                return $this->updateWhere("id = ?", $questionId);
-            } else if ($previousVote == "down" and $vote == "down") {
-                $this->points = $this->points + 1;
-                $userVoteOnQ->deleteWhere("questionId = ? AND userId = ?", [$questionId, $userId]);
-                return $this->updateWhere("id = ?", $questionId);
-            } else if ($previousVote == "up") {
-                $this->points = $this->points - 1;
-            } else if ($previousVote == "down") {
-                $this->points = $this->points + 1;
+            if ($this->checkPreviousVote($previousVote, $vote, $questionId, $userId, $di)) {
+                return;
             }
-            $this->updateWhere("id = ?", $questionId);
-            $userVoteOnQ->deleteWhere("questionId = ? AND userId = ?", [$questionId, $userId]);
-
-            if ($vote == "up") {
-                $this->points = $this->points + 1;
-            } else {
-                $this->points = $this->points - 1;
-            }
-
-            $userVoteOnQ = new UserVoteOnQuestion();
-            $userVoteOnQ->setDb($di->get("dbqb"));
-            $userVoteOnQ->questionId = $questionId;
-            $userVoteOnQ->userId = $userId;
-            $userVoteOnQ->vote = $vote;
+            $this->checkVote($vote);
             $userVoteOnQ->save();
         } else {
-            if ($vote == "up") {
-                $this->points = $this->points + 1;
-            } else {
-                $this->points = $this->points - 1;
-            }
-            $userVoteOnQ = new UserVoteOnQuestion();
-            $userVoteOnQ->setDb($di->get("dbqb"));
-            $userVoteOnQ->questionId = $questionId;
-            $userVoteOnQ->userId = $userId;
-            $userVoteOnQ->vote = $vote;
+            $this->checkVote($vote);
             $userVoteOnQ->save();
         }
         return $this->updateWhere("id = ?", $questionId);
     }
 
     /**
-     * Reset vote
+     * Delete vote
      *
+     * @param integer $questionId Id of the question
+     * @param integer $userId Id of the user
+     * @param object $di service container
      *
-     * @return array Most active user.
+     * @return void
      */
-    public function resetVote($questionId, $vote, $previousVote)
+    public function deleteVote($questionId, $userId, $di)
+    {
+        $userVoteOnQ = new UserVoteOnQuestion();
+        $userVoteOnQ->setDb($di->get("dbqb"));
+        $userVoteOnQ->deleteWhere("questionId = ? AND userId = ?", [$questionId, $userId]);
+    }
+
+    /**
+     * Check previous vote
+     *
+     * @param string $previousVote up or down vote
+     * @param string $vote up or down vote
+     * @param integer $questionId Id of the question
+     * @param integer $userId Id of the user
+     * @param object $di service container
+     *
+     * @return void
+     */
+    public function checkPreviousVote($previousVote, $vote, $questionId, $userId, $di)
     {
 
-        $question = $this->findById($questionId);
-
-        $this->id = $question->id;
-        $this->title = $question->title;
-        $this->question = $question->question;
-        $this->userId = $question->userId;
-        $this->created = $question->created;
-
-        if ($previousVote == "up") {
-            $this->points = $question->points - 1;
-        } else {
-            $this->points = $question->points + 1;
+        if ($previousVote == "up" and $vote == "up") {
+            $this->points = $this->points - 1;
+            $this->deleteVote($questionId, $userId, $di);
+            $this->updateWhere("id = ?", $questionId);
+            return true;
+        } else if ($previousVote == "down" and $vote == "down") {
+            $this->points = $this->points + 1;
+            $this->deleteVote($questionId, $userId, $di);
+            $this->updateWhere("id = ?", $questionId);
+            return true;
+        } else if ($previousVote == "up") {
+            $this->points = $this->points - 1;
+        } else if ($previousVote == "down") {
+            $this->points = $this->points + 1;
         }
         $this->updateWhere("id = ?", $questionId);
+        $this->deleteVote($questionId, $userId, $di);
+    }
 
-        return $this->voteQuestion($questionId, $vote);
-
+    /**
+     * Check Vote and update points.
+     *
+     * @param string $vote up or down vote
+     *
+     * @return void
+     */
+    public function checkVote($vote)
+    {
+        if ($vote == "up") {
+            $this->points = $this->points + 1;
+        } else {
+            $this->points = $this->points - 1;
+        }
     }
 
 }
