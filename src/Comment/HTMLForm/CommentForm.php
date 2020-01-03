@@ -25,6 +25,7 @@ class CommentForm extends FormModel
         $this->form->create(
             [
                 "id" => __CLASS__,
+                "escape-values" => false,
             ],
             [
                 "post" => [
