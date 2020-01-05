@@ -109,9 +109,6 @@ class Question extends ActiveRecordModelExtra
 
         $userVoteOnQ = new UserVoteOnQuestion();
         $userVoteOnQ->setDb($di->get("dbqb"));
-        $userVoteOnQ->questionId = $questionId;
-        $userVoteOnQ->userId = $userId;
-        $userVoteOnQ->vote = $vote;
 
         $voted = $userVoteOnQ->checkIfVoted($questionId, $userId);
         $question = $this->findById($questionId);
@@ -129,10 +126,10 @@ class Question extends ActiveRecordModelExtra
                 return;
             }
             $this->checkVote($vote);
-            $userVoteOnQ->save();
+            $this->getAndSaveUserVote($questionId, $userId, $vote, $di);
         } else {
             $this->checkVote($vote);
-            $userVoteOnQ->save();
+            $this->getAndSaveUserVote($questionId, $userId, $vote, $di);
         }
         return $this->updateWhere("id = ?", $questionId);
     }
@@ -151,6 +148,25 @@ class Question extends ActiveRecordModelExtra
         $userVoteOnQ = new UserVoteOnQuestion();
         $userVoteOnQ->setDb($di->get("dbqb"));
         $userVoteOnQ->deleteWhere("questionId = ? AND userId = ?", [$questionId, $userId]);
+    }
+
+    /**
+     * Get UserVoteOnQuestion object and save vote to table
+     *
+     * @param integer $questionId Id of the question
+     * @param integer $userId Id of the user
+     * @param object $di service container
+     *
+     * @return void
+     */
+    public function getAndSaveUserVote($questionId, $userId, $vote, $di)
+    {
+        $userVoteOnQ = new UserVoteOnQuestion();
+        $userVoteOnQ->setDb($di->get("dbqb"));
+        $userVoteOnQ->questionId = $questionId;
+        $userVoteOnQ->userId = $userId;
+        $userVoteOnQ->vote = $vote;
+        $userVoteOnQ->save();
     }
 
     /**

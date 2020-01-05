@@ -201,10 +201,10 @@ class Answer extends ActiveRecordModelExtra
                 return;
             }
             $this->checkVote($vote);
-            $userVoteOnA->save();
+            $this->getAndSaveUserVote($answerId, $userId, $vote, $di);
         } else {
             $this->checkVote($vote);
-            $userVoteOnA->save();
+            $this->getAndSaveUserVote($answerId, $userId, $vote, $di);
         }
         return $this->updateWhere("id = ?", $answerId);
     }
@@ -223,6 +223,25 @@ class Answer extends ActiveRecordModelExtra
         $userVoteOnA = new UserVoteOnAnswer();
         $userVoteOnA->setDb($di->get("dbqb"));
         $userVoteOnA->deleteWhere("answerId = ? AND userId = ?", [$answerId, $userId]);
+    }
+
+    /**
+     * Get UserVoteOnAnswer object and save vote to table
+     *
+     * @param integer $answerId Id of the answer
+     * @param integer $userId Id of the user
+     * @param object $di service container
+     *
+     * @return void
+     */
+    public function getAndSaveUserVote($answerId, $userId, $vote, $di)
+    {
+        $userVoteOnA = new UserVoteOnAnswer();
+        $userVoteOnA->setDb($di->get("dbqb"));
+        $userVoteOnA->answerId = $answerId;
+        $userVoteOnA->userId = $userId;
+        $userVoteOnA->vote = $vote;
+        $userVoteOnA->save();
     }
 
     /**
