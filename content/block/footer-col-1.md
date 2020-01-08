@@ -1,3 +1,3 @@
-#### Footer col 1
+#### About us
 
-Med brödtext i ett stycke som säger något trevligt om just detta block, eller kanske en lista av länkar.
+If you want to know more about the site Stack Underflow, [click here](about).
