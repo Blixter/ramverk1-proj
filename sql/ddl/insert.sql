@@ -1,7 +1,7 @@
 DELETE FROM User;
 INSERT INTO User VALUES
     ("1", "blixter", "r.blixter89@gmail.com", "$2y$10$dvh8G5tmmUhz1j9M0WK2O.Sj3D/RCI0yWcRdvYaELP8RCP57VQ4iW", 0),
-    ("2", "doe", "doe@doe.com", "$2y$10$A5tEt2Iwf2M7c967jxIg.eY21BoRx3QniqBWzZR5aVvOGBfYofALa", 0),
+    ("2", "doe", "doe@doe.com", "$2y$10$LK1/d0nZyfvahgA1pVaRa.GQGYRuv3QgTdaLP5xzYU8PsnZmWMzJS", 0),
     ("3", "admin", "admin@admin.com", "$2y$10$opTby4EmmZM6Re90F1IZteqG9umNds5mQBNSY43wD/AinvTwxYg.u", 100)
 ;
 
