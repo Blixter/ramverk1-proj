@@ -98,6 +98,14 @@
   .rm-max .rm-small .rm-button {
     color: inherit !important;
   }
+
+  .footer-column-wrapper a {
+    color: inherit !important;
+  }
+
+  .footer-column-wrapper a:visited {
+    color: inherit !important;
+  }
   
   abbr[title],
   abbr[data-original-title] {
