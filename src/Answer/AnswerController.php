@@ -260,10 +260,14 @@ class AnswerController implements ContainerInjectableInterface
         $request = $this->di->get("request");
         $questionId = $request->getGet("questionId");
         $answerId = $request->getGet("answerId");
-
-        $answer = new Answer();
-        $answer->setDb($this->di->get("dbqb"));
-        $answer->acceptAnswer($answerId, $userId);
+        $question = new Question();
+        $question->setDb($this->di->get("dbqb"));
+        $question->findById($questionId);
+        if ($question->userId == $userId) {
+            $answer = new Answer();
+            $answer->setDb($this->di->get("dbqb"));
+            $answer->acceptAnswer($answerId, $userId);
+        }
         $this->di->get("response")->redirect("question/post/" . $questionId)->send();
     }
 

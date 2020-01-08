@@ -303,16 +303,12 @@ class Answer extends ActiveRecordModelExtra
     public function acceptAnswer($answerId, $user)
     {
         $answer = $this->findById($answerId);
-        if ($user == $answer->userId) {
-            $this->id = $answer->id;
-            $this->answer = $answer->answer;
-            $this->userId = $answer->userId;
-            $this->created = $answer->created;
-            $this->points = $answer->points;
-            $this->accepted = true;
-            return $this->updateWhere("id = ?", $answerId);
-        } else {
-            return null;
-        }
+        $this->id = $answer->id;
+        $this->answer = $answer->answer;
+        $this->userId = $answer->userId;
+        $this->created = $answer->created;
+        $this->points = $answer->points;
+        $this->accepted = true;
+        return $this->updateWhere("id = ?", $answerId);
     }
 }
