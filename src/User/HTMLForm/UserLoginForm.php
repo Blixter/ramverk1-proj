@@ -70,7 +70,7 @@ class UserLoginForm extends FormModel
             return false;
         }
 
-        $this->form->addOutput("User " . $user->username . " logged in.");
+        // $this->form->addOutput("User " . $user->username . " logged in.");
 
         $session = $this->di->get("session");
         $session->set("login", $user->id);

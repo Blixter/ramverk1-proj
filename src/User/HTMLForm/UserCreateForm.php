@@ -82,15 +82,40 @@ class UserCreateForm extends FormModel
             $this->form->addOutput("Password did not match.");
             return false;
         }
-        $user = new User();
-        $user->setDb($this->di->get("dbqb"));
-        $user->username = $username;
-        $user->email = $email;
-        $user->points = 0;
-        $user->setPassword($password);
-        $user->save();
-
-        $this->form->addOutput("User was created.");
+        try {
+            $user = new User();
+            $user->setDb($this->di->get("dbqb"));
+            $user->username = $username;
+            $user->email = $email;
+            $user->points = 0;
+            $user->setPassword($password);
+            $user->save();
+            return true;
+        } catch (\Anax\Database\Exception\Exception $e) {
+            return false;
+        }
         return true;
+    }
+    /**
+     * Callback what to do if the form was successfully submitted, this
+     * happen when the submit callback method returns true. This method
+     * can/should be implemented by the subclass for a different behaviour.
+     */
+    public function callbackSuccess()
+    {
+        $this->form->addOutput("User was created.");
+        $this->di->get("response")->redirectSelf()->send();
+    }
+    // /**
+    //  * Callback what to do if the form was unsuccessfully submitted, this
+    //  * happen when the submit callback method returns false or if validation
+    //  * fails. This method can/should be implemented by the subclass for a
+    //  * different behaviour.
+    //  */
+    public function callbackFail()
+    {
+        //$this->form->rememberValues();
+        $this->form->addOutput("Username or Email is already taken, try something else.");
+        $this->di->get("response")->redirectSelf()->send();
     }
 }
