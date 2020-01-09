@@ -300,7 +300,7 @@ class Answer extends ActiveRecordModelExtra
      *
      * @return void
      */
-    public function acceptAnswer($answerId, $user)
+    public function acceptAnswer($answerId)
     {
         $answer = $this->findById($answerId);
         $this->id = $answer->id;
