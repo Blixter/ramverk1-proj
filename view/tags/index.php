@@ -41,7 +41,7 @@ $questionURL = url("question/create");
                 <div class="col-sm-2">
                     <small><?=date('d F Y, h:i', $question["question"]->created)?></small>
                     <div><img src="<?=$gravatar->getGravatar($question["question"]->email, 50)?>"></div>
-                    <p style="margin: 0;"><a href="<?=url("question/user/" . $question["question"]->userId)?>"><?=$question["question"]->username?></a></p>
+                    <p style="margin: 0;"><a href="<?=url("user/view/" . $question["question"]->userId)?>"><?=$question["question"]->username?></a></p>
             </div>
         </div>
     </div>
